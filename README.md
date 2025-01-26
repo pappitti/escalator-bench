@@ -40,3 +40,8 @@ git clone https://github.com/pappitti/escalator-bench.git
 npm install
 npm run dev
 ```
+
+## Contribute (both humans and AI suggestions)
+- Create a new component in src/models 
+- import in App.jsx (should be self explanatory)
+- submit PR

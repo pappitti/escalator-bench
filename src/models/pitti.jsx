@@ -190,6 +190,7 @@ function runEscalatorSimulation({
         const dist = Math.sqrt(dx * dx + dy * dy);
         if (dist < stepY) { 
             // The minimum distance between two people is the width of a step
+            console.log(`Collision detected ${p} and ${pFront}`)
             desiredDy = 0;
         }
         }
@@ -211,7 +212,7 @@ function runEscalatorSimulation({
         // Strategy 1: side by side in the middle 
         // Strategy 2: if walking => left, else right
        
-        if (strategy === "S1") {
+        if (strategy === "S1" || walkProbability === 0) {
           p.x = p.rand < 0.5 ? CANVAS_WIDTH / 2 - space : CANVAS_WIDTH / 2 + space;
         } 
         else if (walkProbability < 1) {
@@ -534,7 +535,7 @@ export default function PittiViz() {
         queueCount: newS2Data.queueCount
       }]);
   }
-
+  console.log(stepY)
   return (
     <div className="flex flex-col items-center w-full bg-gray-100 p-8 dark:bg-gray-100/10 rounded-xl">
       <h1 className="text-2xl w-full font-bold mb-8">Escalator Simulation</h1>
