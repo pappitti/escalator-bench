@@ -1,4 +1,6 @@
-// src/App.js
+/****************************************************** 
+ * LICENCE : DEEPSEEK R1 QWEN2.5-32B
+*******************************************************/
 import React, { useState } from 'react';
 
 function InputControls({ 

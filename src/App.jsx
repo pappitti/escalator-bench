@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import ClaudeViz from './models/claude'
-import DeepseekR1Qwen32BViz from './models/dsr1qwen32b'
+import DeepseekR1Qwen32BViz from './models/dsr1q32b'
 import O1Viz from './models/o1'
+import PittiViz from './models/pitti'
 import './App.css'
 
 function App() {
@@ -10,7 +11,8 @@ function App() {
   const modelElements ={
     "Claude" : ClaudeViz, 
     "DeepSeek r1 Qwen2.5-32B" : DeepseekR1Qwen32BViz,
-    "o1" : O1Viz
+    "o1" : O1Viz,
+    "Pitti, o1 and Claude" : PittiViz
   }
 
   // Get the component for the current assistant
@@ -25,8 +27,8 @@ function App() {
           </button>
         ))}
       </div>
-      <h1>{assistant}</h1>
-      <div>
+      <h1 className="text-2xl my-[30px]">{assistant}</h1>
+      <div className="flex w-full h-full">
         <CurrentComponent />
       </div>
     </div>
