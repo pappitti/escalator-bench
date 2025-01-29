@@ -4,16 +4,18 @@ import DeepseekR1Qwen32BViz from './models/dsr1q32b'
 import O1Viz from './models/o1'
 import PittiViz from './models/pitti'
 import Dsr1Viz from './models/dsr1'
+import Gemini2Viz from './models/gemeni2'
 import './App.css'
 
 function App() {
   const [assistant, setAssistant] = useState("Claude")
 
   const modelElements ={
-    "Claude" : ClaudeViz, 
-    "DeepSeek r1 Distill Qwen2.5-32B" : DeepseekR1Qwen32BViz,
     "o1" : O1Viz,
+    "Gemini 2 Experimental" : Gemini2Viz,
+    "Claude" : ClaudeViz, 
     "DeepSeek r1" : Dsr1Viz,
+    "DeepSeek r1 Distill Qwen2.5-32B" : DeepseekR1Qwen32BViz,
     "Pitti, o1 and Claude" : PittiViz
   }
 
