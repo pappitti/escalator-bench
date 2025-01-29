@@ -49,6 +49,8 @@ const ESCALATOR_TOP_Y = CANVAS_HEIGHT / 2;
 // Distances for collision checks, etc.
 const PERSON_RADIUS = 2;
 
+const TICK = 100; // ms
+
 // For reference only 
 class SimulationData{
   constructor(time, people, finishedCount, queueLength){
@@ -122,7 +124,13 @@ function runEscalatorSimulation({
   let updatedFinishedCount = prev.finishedCount;
   let updatedQueueCount = prev.queueCount;
 
-  const space = Math.max(stepY / 2, 10)
+  // lateral space from the middle of the escalator
+  const space = Math.max(stepY / 2, 10);
+
+  // escalator capacity logic
+  const stepsInTime = escalatorSpeed * dt * 1000 / TICK ;
+  let leftOnEscalator = 0 ;
+  let rightOnEscalator = 0 ;
 
   if (newCount > 0) {
     for (let i = 0; i < newCount; i++) {
@@ -450,11 +458,11 @@ export default function PittiViz() {
       if (!paused) {
         intervalId = setInterval(() => {
           // Tick every 0.1s
-          const newTime = (currentTimeRef.current || 0) + 0.1 * timeScale;
+          const newTime = ( currentTimeRef.current || 0 ) + TICK / 1000 * timeScale;
           currentTimeRef.current = newTime;
           // Then run your simulation logic with dt=0.1 * timeScale
-          updateSimulation(0.1 * timeScale, newTime);
-        }, 100);
+          updateSimulation( TICK / 1000 * timeScale, newTime);
+        }, TICK);
       }
       return () => {
         if (intervalId) clearInterval(intervalId);
