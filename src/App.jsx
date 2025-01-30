@@ -4,7 +4,7 @@ import DeepseekR1Qwen32BViz from './models/dsr1q32b'
 import O1Viz from './models/o1'
 import PittiViz from './models/pitti'
 import Dsr1Viz from './models/dsr1'
-import Gemini2Viz from './models/gemeni2'
+import Gemini2Viz from './models/gemini2'
 import './App.css'
 
 function App() {

@@ -46,10 +46,11 @@ const CANVAS_HEIGHT = 300;
 // We'll treat y as the top of the funnel region
 const ESCALATOR_TOP_Y = CANVAS_HEIGHT / 2;
 
+// incremental spots in the queue graph per level (1 or 2)
+const QUEUE_X_INCREMENT = 2; // two stops at the top of the queue, 4 behinf them, 6 behind them, etc.
+
 // Distances for collision checks, etc.
 const PERSON_RADIUS = 2;
-
-const TICK = 100; // ms
 
 // For reference only 
 class SimulationData{
@@ -58,6 +59,415 @@ class SimulationData{
     this.people = people,
     this.finishedCount = finishedCount,
     this.queueLength = queueLength
+  }
+}
+
+//spot in the graph
+class Node {
+  constructor(type, level, index) {
+    this.type = type; // escalator or queue
+    this.level = level;
+    this.index = index;
+    this.connections = []; // [frontLeft (if any), front (if any), frontRight (if any)]
+    this.occupied = null;  // null or Person
+  }
+}
+
+class Person {
+  constructor(id, isWalking, walkingSpeed) {
+    this.id = id;
+    this.isWalking = isWalking;
+    this.walkingSpeed = walkingSpeed;
+    this.currentNode = null; //
+    this.onEscalator = false;
+    this.done = false;
+  }
+}
+/*******************************************************
+ * 2) GRAPH COMPONENT
+ *******************************************************/
+
+class EscalatorGraph {
+  constructor(strategy, escalatorHeight, queueHeight, escalatorLength, escalatorSpeed){
+    this.strategy = strategy;
+    this.escalatorLength = escalatorLength;
+    this.escalatorSpeed = escalatorSpeed;
+    this.nodes = new Map();
+    this.escalatorLevels = [];
+    this.queueLevels = [];
+    this.people = [];
+    this.inQueue = 0;
+    this.onEscalator = 0;
+    this.finishedCount = 0;
+    this.bloated = false;
+    this.buildEscalatorGraph();
+    this.buildQueueGraph(escalatorLength  * queueHeight / (escalatorHeight  || 1));
+  }
+
+  buildEscalatorGraph() {
+    // Build from bottom to top
+    const levelsCount = this.escalatorLength;
+    for (let level = 0; level < levelsCount; level++) {
+      const nodeLeft = new Node("escalator", level, 0);
+      const nodeRight = new Node("escalator", level, 1);
+      this.nodes.set(("escalator", level, 0),nodeLeft);
+      this.nodes.set(("escalator", level, 1),nodeRight);
+      this.escalatorLevels.push([nodeLeft, nodeRight]);
+      if (level > 0) {
+        const aboveLevel = this.escalatorLevels[level - 1];
+        nodeLeft.connections.push(aboveLevel[0]);
+        nodeRight.connections.push(aboveLevel[1]);
+      } 
+    }
+    // console.log(`escalator length ${this.escalatorLevels.length}`);
+  }
+
+  buildQueueGraph(height) {
+    // Build from top to bottom
+    // Top level has 2 spots
+    const levelsCount = Math.floor(height);
+    
+    for (let level = 0; level < levelsCount; level++) {
+      const nodesInLevel = 2 + (level * QUEUE_X_INCREMENT);
+      const levelNodes = [];
+      
+      // Create nodes for this level
+      for (let i = 0; i < nodesInLevel; i++) {
+        const node = new Node("queue", level, i);
+        levelNodes.push(node);
+        this.nodes.set(("queue", level, i),node);
+      }
+      
+      this.queueLevels.push(levelNodes);
+      
+      // Connect to level above if not top level
+      if (level > 0) {
+        const aboveLevel = this.queueLevels[level - 1];
+        const aboveLevelLength = aboveLevel.length;
+        
+        levelNodes.forEach((node, i) => {
+          // Calculate potential connections to above level          
+          const connectedNodes = aboveLevel.filter(upperNode => 
+            upperNode.index >= Math.max(0,i - 2) 
+            && upperNode.index <= Math.min(i, aboveLevelLength - 1)
+          )
+          node.connections=[...connectedNodes];
+        });
+      };
+    }
+    // console.log(`queuelength ${this.queueLevels.length}`);
+  }
+
+  findAvailableStartNodes(isWalking, walkProbability) {
+    const bottomLevel = this.queueLevels[this.queueLevels.length - 1];
+    const walkersSpots = Math.floor(walkProbability * bottomLevel.length);
+    const maxWalkersIndex= Math.max(walkersSpots-1,0);
+    const available = bottomLevel.filter(node => {
+      if (node.occupied) return false;
+      if (isWalking && node.index > maxWalkersIndex) return false;
+      if (!isWalking && node.index <= maxWalkersIndex) return false;
+      return true;
+    });
+    return available;
+  }
+
+  addNewPeople(count, walkProbability, walkSpeedMean, walkSpeedStd) {
+    for (let i = 0; i < count; i++) {
+      const isWalking = this.strategy === "S2" && Math.random() < walkProbability;
+      const walkingSpeed = isWalking
+        ? truncatedWalkingSpeed(walkSpeedMean, walkSpeedStd)
+        : 0;
+        
+      const availableNodes = this.findAvailableStartNodes(isWalking, walkProbability);
+      if (availableNodes.length === 0) {
+        console.log("Queue is full!");
+        this.bloated = true;
+        break;
+      }
+      const startNode = availableNodes[Math.floor(Math.random() * availableNodes.length)];
+      const person = new Person(
+        performance.now() + Math.random(),
+        isWalking,
+        walkingSpeed
+      );
+      
+      person.currentNode = startNode;
+      startNode.occupied = person;
+      this.people.push(person);
+      this.inQueue++;
+
+      console.log("New person", person);
+    }
+  }
+
+  cleanPeople() {
+    this.people = this.people.filter(p => !p.done);
+  }
+
+  // Move people from bottom to top
+  movePeople() {
+
+    function moveWalkersInQueue(shuffledNodes, aboveLevelHalf) {
+      shuffledNodes.forEach(node => {
+        // Find available connections
+        const availableNodes = node.connections.filter(n => !n.occupied);
+        
+        if (availableNodes.length > 0) {
+          // sorted connections by index
+          availableNodes.sort((a, b) => a.index - b.index );
+          
+          const rand = Math.random();
+          let targetNode = undefined;
+          let updatePosition = false;
+
+          if (availableNodes.length === 1){
+            if (
+              availableNodes[0].index === node.index 
+              && rand > 0.8 
+              && availableNodes[0].index != aboveLevelHalf
+            ){
+              // only 20% chances to try overtake on the right
+              targetNode = availableNodes[0];
+              updatePosition = true;
+            } else if (availableNodes[0].index !== node.index){
+              targetNode = availableNodes[0];
+              updatePosition = true;
+            }
+          } else if (
+            availableNodes.length === 2 
+            && availableNodes[availableNodes.length-1].index === node.index
+          ){
+            // take the leftmost node
+            targetNode = availableNodes[0];
+            updatePosition = true;
+          }
+          else {
+            if (rand < 0.8){
+              // 80% chances to stay in your lane
+              targetNode = availableNodes[1];
+              updatePosition = true;
+            } else {
+              // 20% chances to walk to the left
+              targetNode = availableNodes[0];
+              updatePosition = true;
+            }
+          }
+          
+          // Move person to new node
+          if (updatePosition) {
+            targetNode.occupied = node.occupied;
+            node.occupied.currentNode = targetNode;
+            node.occupied = null;
+          }
+        }
+      });
+    }
+    
+    const moveStandersInQueue = (shuffledNodes, aboveLevelHalf) => {
+
+      shuffledNodes.forEach(node => {
+        // Find available connections
+        const availableNodes = node.connections.filter(n => !n.occupied);
+        
+        if (availableNodes.length > 0) {
+          // sorted connections by distance to the middle
+          availableNodes.sort((a, b) => 
+            Math.abs(a.index - aboveLevelHalf) - Math.abs(b.index - aboveLevelHalf)
+          );
+
+          // Check if the last node is further than the current node from the middle
+          const isLastFurther = availableNodes[availableNodes.length-1].index >= aboveLevelHalf 
+            ? node.index >= aboveLevelHalf && node.index === availableNodes[availableNodes.length-1].index
+            : availableNodes[availableNodes.length-1].index < node.index -1;
+          
+          const rand = Math.random();
+          let targetNode = undefined;
+          let updatePosition = false;
+
+          if (availableNodes.length === 1){
+            if (this.strategy === "S2" && availableNodes[0].index === 0){
+              // leftmost nodes are reserved for walkers
+              return
+            } else if (isLastFurther && rand > 0.75){
+              // only 25% chances to walk further away from the middl
+              targetNode = availableNodes[0];
+              updatePosition = true;
+            } else if (!isLastFurther){
+              targetNode = availableNodes[0];
+              updatePosition = true;
+            } 
+          } else if (availableNodes.length === 2 && isLastFurther) {
+              // do not walk further away from the middle
+              targetNode = availableNodes[0];
+              updatePosition = true;
+          } else {
+            if (rand < 0.66){
+              // 66% chances to walk towards the middle
+              targetNode = availableNodes[0];
+              updatePosition = true;
+            } else {
+              // 33% chances to stay in your lane
+              targetNode = availableNodes[1];
+              updatePosition = true;
+            }
+          }
+          
+          // Move person to new node
+          if (updatePosition) {
+            targetNode.occupied = node.occupied;
+            node.occupied.currentNode = targetNode;
+            node.occupied = null;
+          }
+        }
+      });
+    }
+
+    // escalator logic for level 0
+    // TODO cahnge escalator logic to use coordinates
+    for (let i = 0; i < this.escalatorLevels.length; i++) {
+      const level = this.escalatorLevels[i];
+      level.forEach( (node,j) => {
+        if (node.occupied) {
+          const person = node.occupied;
+          // TODO
+          const iterations = 1 + person.walkingSpeed ;
+          
+          let startingPoint = i
+          let iteration = 1;
+
+          while (true) {
+            if (startingPoint === 0) {
+              // person is done
+              person.done = true;
+              this.finishedCount++;
+              this.onEscalator--;
+              person.currentNode.occupied = null;
+              break;
+            }
+
+            const nextNode = person.currentNode.connections[0];
+            if (nextNode.occupied) {
+              // In that case the walker is blocked and keeps progressing at the same speed
+              person.walkingSpeed = nextNode.occupied.walkingSpeed;
+              break;
+            } else {
+              // otherwise move up
+              nextNode.occupied = person;
+              person.currentNode.occupied = null;
+              person.currentNode = nextNode;
+            }
+            startingPoint--;
+            iteration++;
+            if ( iteration > iterations) break;
+          }
+        }
+      });
+    }
+
+    // Moving people on the escalator
+    for (let j=0; j < this.queueLevels[0].length; j++) {
+      const node = this.queueLevels[0][j];
+      if (node.occupied) {
+        const person = node.occupied;
+        const nextNode = this.escalatorLevels[this.escalatorLevels.length - 1][j];
+        if (!nextNode.occupied) {
+          nextNode.occupied = person;
+          person.currentNode.occupied = null;
+          person.currentNode = nextNode;
+          this.inQueue--;
+          this.onEscalator++;
+        }
+      }
+    }
+
+    // Process levels from top to bottom
+    for (let level = 1; level < this.queueLevels.length; level++) {
+      const currentLevel = this.queueLevels[level];
+      const aboveLevel = this.queueLevels[level - 1];
+      const aboveLevelHalf = Math.floor(aboveLevel.length/2);
+      
+      const occupiedNodes = currentLevel.filter(node => node.occupied);
+      // Randomize order of nodes in level
+      const shuffleWalkers = occupiedNodes
+        .filter(node => node.occupied.isWalking)
+        .sort(() => Math.random() - 0.5);
+      const shuffleStanders = occupiedNodes
+        .filter(node => !node.occupied.isWalking)
+        .sort(() => Math.random() - 0.5);
+
+      moveWalkersInQueue(shuffleWalkers);
+      moveStandersInQueue(shuffleStanders, aboveLevelHalf);
+    
+    }
+  }
+
+  step({
+    walkSpeedMean,
+    walkSpeedStd,
+    walkProbability,
+    timescale,
+    newCount,
+  }) {
+
+    let remainingNewCount = newCount;
+    const partialCount = Math.floor(newCount / timescale);
+
+    for (let i = 0; i < timescale; i++) {
+
+      const stepNewCount = remainingNewCount < 2 * partialCount ? remainingNewCount : partialCount;
+
+
+      // Add new people
+      this.addNewPeople(
+        stepNewCount, 
+        walkProbability, 
+        walkSpeedMean, 
+        walkSpeedStd
+      );
+      
+      if (!this.bloated) {
+        // Move people
+        this.movePeople(timescale);
+
+        this.cleanPeople();
+      }
+
+      remainingNewCount -= stepNewCount; 
+
+      //console.log(this.people, this.inQueue, this.onEscalator, this.finishedCount);
+    }
+
+    // Return metrics
+    return {
+      people: this.people.map(p => ({ ...p })), // Return copy of people array
+      finishedCount: this.finishedCount,
+      queueCount: this.inQueue,
+      escalatorCount: this.onEscalator,
+      bloated: this.bloated,
+    };
+  }
+
+  runEscalatorSimulation({
+    walkSpeedMean,
+    walkSpeedStd,
+    walkProbability,
+    timestamp,
+    timescale,
+    newCount,
+  }) {
+    console.log(`Running simulation ${timestamp} ${this.strategy}`)
+    console.log(this.people.map(p => ({ ...p })));
+    console.log(this.inQueue, this.onEscalator, this.finishedCount);
+    return {
+      timestamp,
+      ...this.step({
+        walkSpeedMean,
+        walkSpeedStd,
+        walkProbability,
+        timescale,
+        newCount,
+      })
+    }
   }
 }
 
@@ -101,233 +511,17 @@ function mergeByTimestamp(dataS1, dataS2) {
 
   return mergedArray;
 }
-
-/*******************************************************
- * 2) SIMULATION HOOK
- *
- *    Each strategy will have its own instance.
- *******************************************************/
-function runEscalatorSimulation({
-  strategy,         // "S1" or "S2"
-  escalatorSpeed,   // e.g. 0.5
-  walkSpeedMean,    
-  walkSpeedStd,
-  walkProbability,  // fraction for Strategy 2
-  timestamp,
-  stepY,
-  dt,
-  newCount,
-  prev,
-}) {
-  // 2.1) State
-  let updatedPeople = [...prev.people];
-  let updatedFinishedCount = prev.finishedCount;
-  let updatedQueueCount = prev.queueCount;
-
-  // lateral space from the middle of the escalator
-  const space = Math.max(stepY / 2, 10);
-
-  // escalator capacity logic
-  const stepsInTime = escalatorSpeed * dt * 1000 / TICK ;
-  let leftOnEscalator = 0 ;
-  let rightOnEscalator = 0 ;
-
-  if (newCount > 0) {
-    for (let i = 0; i < newCount; i++) {
-      const rand = Math.random();
-      const id = performance.now() + rand;
-      let isWalking = false;
-      // We'll place them randomly in the bottom of the funnel (y ~ CANVAS_HEIGHT - 20 ..CANVAS_HEIGHT).
-      // The funnel's bottom is wide, say x in [50..CANVAS_WIDTH-50].
-      let x = 25 + Math.random() * (CANVAS_WIDTH-50);
-      if (strategy === "S2") {
-        // For Strategy 2, we randomly decide if they walk
-        isWalking = Math.random() < walkProbability;
-        // We'll place walkers on the left, standers on the right
-        x = isWalking 
-          ? 25 + Math.random() * (CANVAS_WIDTH-50) * walkProbability
-          : 25 + (CANVAS_WIDTH-50) * walkProbability + Math.random() * (CANVAS_WIDTH-50) * (1 - walkProbability);
-      }
-      const y = CANVAS_HEIGHT - 20 + Math.random() * 20;
-      const walkingSpeed = isWalking
-        ? truncatedWalkingSpeed(walkSpeedMean, walkSpeedStd)
-        : 0;
-
-      updatedPeople.push({
-        id,
-        rand,
-        x,
-        y,
-        isWalking,
-        walkingSpeed,
-        onEscalator: false,
-        done: false,
-      });
-      updatedQueueCount++;
-    }
-  }
-  // 2.4.2) UPDATE POSITIONS
-
-  // 2D funnel logic for those not on escalator yet
-  // We'll do a simplistic approach:
-  // - Each person tries to move upward at some base speed .
-  // - They are restricted by funnel boundaries (linearly shrinking).
-  // - They can't overlap other people (simple collision check).
-  // - Once y <= ESCALATOR_TOP_Y, they transition to escalator logic.
-
-  // Sort by y ascending so the front (lowest y) is first
-  updatedPeople.sort((a, b) => a.y - b.y);
-
-  const queueSpeed = 1.2 * walkSpeedMean; // base speed in funnel 
-  for (let i = 0; i < updatedPeople.length; i++) {
-    const p = {...updatedPeople[i]};
-    if (p.done) continue;
-
-    if (!p.onEscalator) {
-      // Move up at queueSpeed
-      let desiredDy = queueSpeed * dt;
-
-      // Very simple collision-avoidance:
-      // If p is about to overlap with the passenger in front (i-1),
-      // we reduce desiredDy or shift slightly.
-      if (i > 0) {
-        const pFront = updatedPeople[i - 1];
-        if (!pFront.done && !pFront.onEscalator) {
-        const dx = pFront.x - p.x;
-        const dy = pFront.y - p.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < stepY) { 
-            // The minimum distance between two people is the width of a step
-            console.log(`Collision detected ${p} and ${pFront}`)
-            desiredDy = 0;
-        }
-        }
-      }
-
-      // Actually move up
-      p.y -= desiredDy  * stepY ; //(all speeds are in steps/s)
-
-      // Keep them within funnel boundaries
-      funnelClamp(p, walkProbability);
-
-      // If at escalator boundary, switch to escalator logic
-      if (p.y <= ESCALATOR_TOP_Y) {
-        p.onEscalator = true;
-        updatedQueueCount--;
-        // Place them exactly at boundary
-        p.y = ESCALATOR_TOP_Y;
-
-        // Strategy 1: side by side in the middle 
-        // Strategy 2: if walking => left, else right
-       
-        if (strategy === "S1" || walkProbability === 0) {
-          p.x = p.rand < 0.5 ? CANVAS_WIDTH / 2 - space : CANVAS_WIDTH / 2 + space;
-        } 
-        else if (walkProbability < 1) {
-            p.x = p.isWalking ? CANVAS_WIDTH / 2 - space : CANVAS_WIDTH / 2 + space;
-        } else if (
-            walkProbability === 1 && updatedPeople
-            .slice(0, i)
-            .filter((otherPs) => !otherPs.isWalking && !otherPs.done)
-            .length === 0
-        ) {
-            p.x = p.rand < 0.5 ? CANVAS_WIDTH / 2 - space : CANVAS_WIDTH / 2 + space;
-        } else {
-            p.x = p.isWalking ? CANVAS_WIDTH / 2 - space : CANVAS_WIDTH / 2 + space;
-        }
-      }
-    } else {
-      // ESCALATOR LOGIC
-      // base speed = escalatorSpeed 
-      // if walking => escalatorSpeed + walkingSpeed
-      let desiredSpeed = escalatorSpeed ;
-      if (p.isWalking) desiredSpeed += p.walkingSpeed;
-
-      // no-overtaking on escalator
-      if (i > 0) {
-        const pFronts = updatedPeople
-          .slice(0, i)
-          .filter((otherPs) => otherPs.y < p.y && otherPs.x === p.x);
-        const pFront = pFronts[pFronts.length - 1];
-        if (pFront?.onEscalator && !pFront.done) {
-          // check vertical overlap
-          // If they are within 1 escalator step, we slow down
-          if (Math.abs(pFront.y - p.y) < stepY && p.walkingSpeed > pFront.walkingSpeed) {
-            desiredSpeed = escalatorSpeed + pFront.walkingSpeed;
-            p.walkingSpeed = pFront.walkingSpeed;
-          }
-        }
-      }
-
-      // Move up (all speeds are in steps/s)
-      p.y -= desiredSpeed * dt * stepY;
-      // if p.y <= 0 => done
-      if (p.y <= 0) {
-        p.done = true;
-        updatedFinishedCount++;
-      }
-    }
-    updatedPeople[i] = p;
-  }
-  const finishedCount = updatedFinishedCount;
-  const queueCount = updatedQueueCount;
-
-  return {
-    timestamp,
-    people : updatedPeople.filter((p) => !p.done),
-    finishedCount,
-    queueCount,
-  };
-}
   
 /*******************************************************
- * 3) FUNNEL CLAMPING FUNCTION
- *
- * We'll define a trapezoid from y=600 to y=200, narrowing
- * from x=[50..250] at bottom to x=[125..175] at top.
- *
- * We linearly interpolate the left & right boundaries
- * based on y.
- *******************************************************/
-function funnelClamp(p, walkProbability) {
-  // p.y is in [600..200]
-  // fraction f = (bottomY - p.y) / (bottomY - topY) = (600 - p.y) / (400)
-  // left boundary = leftBottom + f*(leftTop - leftBottom) = 50 + f*(125 - 50)
-  // right boundary = rightBottom + f*(rightTop - rightBottom) = 250 + f*(175 - 250)
-  // Then clamp p.x to [left, right]
-  const bottomY = CANVAS_HEIGHT;
-  const topY =  ESCALATOR_TOP_Y;
-  const rangeY = bottomY - topY; 
-
-  if (p.y > bottomY) return;  // below funnel, no clamp
-  if (p.y < topY) return;     // above funnel, no clamp
-
-  const f = (bottomY - p.y) / rangeY; // 0..1
-
-  const leftBottom = p.isWalking 
-    ? 25
-    : 25 + (CANVAS_WIDTH-50) * walkProbability;
-  const leftTop = CANVAS_WIDTH/2 - 25;
-  const rightBottom = p.isWalking 
-    ? 25 + (CANVAS_WIDTH-50) * walkProbability 
-    : CANVAS_WIDTH - 25;
-  const rightTop = CANVAS_WIDTH/2 + 25;
-
-  const leftBoundary = leftBottom + f * (leftTop - leftBottom) 
-  const rightBoundary = rightBottom + f * (rightTop - rightBottom) 
-
-  if (p.x < leftBoundary) p.x = leftBoundary;
-  if (p.x > rightBoundary) p.x = rightBoundary;
-}
-  
-/*******************************************************
- * 4) STRATEGY SIMULATION COMPONENT
+ * 3) STRATEGY SIMULATION COMPONENT
  *
  *    Renders the canvas and a "Reset" button.
  *******************************************************/
 function StrategySimulation(props) {
   const {
     strategyLabel,
+    escalatorLength, //escalatorLength
+    graphQueueLevelsBase, //maxWidth
     timestamp,
     people,
     finishedCount,
@@ -337,6 +531,10 @@ function StrategySimulation(props) {
   const canvasRef = useRef(null);
 
   useEffect(() => {
+
+    const y = ESCALATOR_TOP_Y/escalatorLength;
+    const x = (CANVAS_WIDTH - 50) / graphQueueLevelsBase ;
+
     if (!canvasRef.current) return;
     const ctx = canvasRef.current.getContext("2d");
 
@@ -364,12 +562,15 @@ function StrategySimulation(props) {
     // People
     people.forEach((p) => {
       if (p.done) return;
+      const node = p.currentNode;
+      const pY = (node.level + p.onEscalator ? 0 : escalatorLength )* y + y / 2 ;
+      const pX =  CANVAS_WIDTH / 2 + (node.index - 1 - p.onEscalator ? 0 : (node.level)) * x;
       ctx.beginPath();
-      ctx.arc(p.x, p.y, PERSON_RADIUS, 0, 2 * Math.PI);
+      ctx.arc(pX , pY, PERSON_RADIUS, 0, 2 * Math.PI);
       ctx.fillStyle = p.isWalking ?  "#c6005c" : "#007595" ;
       ctx.fill();
     });
-  }, [people]);
+  }, [people, escalatorLength, graphQueueLevelsBase]);
 
   return (
     <div className="flex flex-col items-center">
@@ -388,7 +589,7 @@ function StrategySimulation(props) {
 }
 
 /*******************************************************
- * 5) METRICS TILES
+ * 4) METRICS TILES
  *******************************************************/
 
 // Metric card component for displaying individual statistics
@@ -400,14 +601,12 @@ const MetricCard = ({ title, value }) => (
 );
   
 /*******************************************************
- * 6) MAIN APP: MANAGES INPUTS & DISPLAYS RECHARTS LINECHART
+ * 5) MAIN APP: MANAGES INPUTS & DISPLAYS RECHARTS LINECHART
  *******************************************************/
 export default function PittiViz() {
-  // 6.1) Simulation parameters
+  // 5.1) Simulation parameters
   const [escalatorLength, setEscalatorLength] = useState(100);
   const [escalatorSpeed, setEscalatorSpeed] = useState(2);
-
-  const stepY = ESCALATOR_TOP_Y / escalatorLength;
 
   const [arrivalRate, setArrivalRate] = useState(1.0);
   const [walkSpeedMean, setWalkSpeedMean] = useState(2);
@@ -418,17 +617,32 @@ export default function PittiViz() {
   // For the arrival logic
   const arrivalAccumulatorRef = useRef(0);
 
-  // 6.2) Time controls
+  // 5.2) Time controls
   const currentTimeRef = useRef(0);
   const [timeScale, setTimeScale] = useState(1.0);
   const [paused, setPaused] = useState(false);
 
-  // 6.3) Each strategy’s data
+  // 5.3) Each strategy’s data
   const [dataS1, setDataS1] = useState([]);
   const [dataS2, setDataS2] = useState([]);
-
-  const currentS1Ref = useRef({ timestamp: 0, people: [], finishedCount: 0, queueCount: 0 });
-  const currentS2Ref = useRef({ timestamp: 0, people: [], finishedCount: 0, queueCount: 0 });
+  const graph1Ref = useRef( 
+    new EscalatorGraph(
+      "S1", 
+      ESCALATOR_TOP_Y, 
+      CANVAS_HEIGHT - ESCALATOR_TOP_Y, 
+      escalatorLength,
+      escalatorSpeed
+    ) 
+  )
+  const graph2Ref = useRef(
+    new EscalatorGraph(
+      "S2", 
+      ESCALATOR_TOP_Y, 
+      CANVAS_HEIGHT - ESCALATOR_TOP_Y, 
+      escalatorLength,
+      escalatorSpeed
+    )
+  );
   
   function findLastMinuteStats(simulationData){
     const lastS = simulationData.length
@@ -449,20 +663,24 @@ export default function PittiViz() {
   const lastMinuteS1 = findLastMinuteStats(dataS1);
   const lastMinuteS2 = findLastMinuteStats(dataS2);
 
-  // 6.4) Build a merged array for Recharts
+  // 5.4) Build a merged array for Recharts
   const mergedData = mergeByTimestamp(dataS1, dataS2);
 
-  // 6.5) Setup effect: start or reset simulation on param changes
+  // 5.5) Setup effect: start or reset simulation on param changes
   useEffect(() => {
       let intervalId = null;
+
+      // The tick interval in ms is proportional to the escalator speed (can be accelerated with time scale) so people move up the graph at each tick
+      const tick = 1 / escalatorSpeed;
+
       if (!paused) {
         intervalId = setInterval(() => {
           // Tick every 0.1s
-          const newTime = ( currentTimeRef.current || 0 ) + TICK / 1000 * timeScale;
+          const newTime = ( currentTimeRef.current || 0 ) + tick * timeScale;
           currentTimeRef.current = newTime;
           // Then run your simulation logic with dt=0.1 * timeScale
-          updateSimulation( TICK / 1000 * timeScale, newTime);
-        }, TICK);
+          updateSimulation( timeScale, newTime);
+        }, tick * 1000 );
       }
       return () => {
         if (intervalId) clearInterval(intervalId);
@@ -477,54 +695,54 @@ export default function PittiViz() {
     escalatorSpeed,
   ]);
 
-  // 6.6) Reset function
+  // 5.6) Reset function
   function resetSimulation() {
     currentTimeRef.current = 0;
+    graph1Ref.current = new EscalatorGraph(
+      "S1",
+      ESCALATOR_TOP_Y, 
+      CANVAS_HEIGHT - ESCALATOR_TOP_Y, 
+      escalatorLength,
+      escalatorSpeed
+    );
+    graph2Ref.current = new EscalatorGraph(
+      "S2",
+      ESCALATOR_TOP_Y, 
+      CANVAS_HEIGHT - ESCALATOR_TOP_Y, 
+      escalatorLength,
+      escalatorSpeed
+    );
     setDataS1([]);
     setDataS2([]);
-    currentS1Ref.current = { timestamp: 0, people: [], finishedCount: 0, queueCount: 0 };
-    currentS2Ref.current = { timestamp: 0, people: [], finishedCount: 0, queueCount: 0 };
     arrivalAccumulatorRef.current = 0;
   }
 
-  // 6.7) Main update loop
-  function updateSimulation(dt, timestamp) {
+  // 5.7) Main update loop
+  function updateSimulation(timescale, timestamp) {
 
     // Accumulate fractional arrivals
-    arrivalAccumulatorRef.current += arrivalRate * dt;
+    arrivalAccumulatorRef.current += arrivalRate / escalatorSpeed * timescale;
     let newCount = Math.floor(arrivalAccumulatorRef.current);
     arrivalAccumulatorRef.current -= newCount;
 
     // Run the simulation for each strategy
-    const newS1Data = runEscalatorSimulation({
-      strategy: "S1",
-      escalatorSpeed,
+    const newS1Data = graph1Ref.current.runEscalatorSimulation({
       walkSpeedMean,
       walkSpeedStd,
       walkProbability: 0,
       timestamp,
-      stepY,
-      dt,
-      newCount,
-      prev: currentS1Ref.current,
+      timescale,
+      newCount
     })
 
-    const newS2Data = runEscalatorSimulation({
-      strategy: "S2",
-      escalatorSpeed,
+    const newS2Data = graph2Ref.current.runEscalatorSimulation({
       walkSpeedMean,
       walkSpeedStd,
       walkProbability,
       timestamp,
-      stepY,
-      dt,
+      timescale,
       newCount,
-      prev: currentS2Ref.current,
     })
-
-    // Update refs immediately
-    currentS1Ref.current = newS1Data;
-    currentS2Ref.current = newS2Data;
     
     // Use a single setState call to batch updates
     setDataS1(prev => [
@@ -532,7 +750,8 @@ export default function PittiViz() {
       {
         timestamp: newS1Data.timestamp, 
         finishedCount: newS1Data.finishedCount, 
-        queueCount: newS1Data.queueCount
+        queueCount: newS1Data.queueCount,
+        escalatorCount: newS1Data.escalatorCount
       }
     ]);
     setDataS2(prev => [
@@ -540,10 +759,11 @@ export default function PittiViz() {
       {
         timestamp: newS2Data.timestamp, 
         finishedCount: newS2Data.finishedCount, 
-        queueCount: newS2Data.queueCount
+        queueCount: newS2Data.queueCount,
+        escalatorCount: newS2Data.escalatorCount
       }]);
   }
-  console.log(stepY)
+
   return (
     <div className="flex flex-col items-center w-full bg-gray-100 p-8 dark:bg-gray-100/10 rounded-xl">
       <h1 className="text-2xl w-full font-bold mb-8">Escalator Simulation</h1>
@@ -567,9 +787,10 @@ export default function PittiViz() {
             <input
               type="number"
               step="0.1"
+              min="0.2"
               className="border p-2 w-full rounded-lg text-center"
               value={escalatorSpeed}
-              onChange={(e) => setEscalatorSpeed(Number(e.target.value))}
+              onChange={(e) => setEscalatorSpeed(Math.min(Number(e.target.value),0.2))}
             />
           </div>
 
@@ -738,20 +959,28 @@ export default function PittiViz() {
           </div>
           <div className="grid w-full grid-cols-2 gap-4 mt-4">
               <div className="flex flex-col items-center bg-gray-100 dark:bg-gray-100/10 p-4 rounded-lg shadow">
-                  <StrategySimulation
+                  {graph1Ref?.current && 
+                    <StrategySimulation
                       strategyLabel="All standing"
-                      timestamp={currentS1Ref.current.timestamp}
-                      people={currentS1Ref.current.people}
-                      finishedCount={currentS1Ref.current.finishedCount}
+                      escalatorLength={escalatorLength}
+                      graphQueueLevelsBase={graph1Ref.current.queueLevels[graph1Ref.current.queueLevels.length-1].length}
+                      timestamp={graph1Ref.current.timestamp}
+                      people={graph1Ref.current.people}
+                      finishedCount={graph1Ref.current.finishedCount}
                   />
+}
               </div>
               <div className="flex flex-col items-center bg-gray-100 dark:bg-gray-100/10 p-4 rounded-lg shadow">
+                {graph2Ref?.current &&
                   <StrategySimulation
                       strategyLabel="Walkers"
-                      timestamp={currentS2Ref.current.timestamp}
-                      people={currentS2Ref.current.people}
-                      finishedCount={currentS2Ref.current.finishedCount}
+                      escalatorLength={escalatorLength}
+                      graphQueueLevelsBase={graph2Ref.current.queueLevels[graph2Ref.current.queueLevels.length-1].length}
+                      timestamp={graph2Ref.current.timestamp}
+                      people={graph2Ref.current.people}
+                      finishedCount={graph2Ref.current.finishedCount}
                   />
+                }
               </div>
           </div>
         </div>
@@ -763,15 +992,15 @@ export default function PittiViz() {
               <div className="text-cyan-700">Strategy 1 : All Standing</div>
               <MetricCard 
               title="People Processed" 
-              value={currentS1Ref.current.finishedCount}
+              value={graph1Ref.current.finishedCount}
               />
               <MetricCard 
               title="Current Queue Length" 
-              value={currentS1Ref.current.queueCount}
+              value={graph1Ref.current.queueCount}
               />
               <MetricCard 
               title="Total Throughput" 
-              value={`${(currentS1Ref.current.finishedCount * 60 / (currentS1Ref.current.timestamp||1)).toFixed(2)}/min`}
+              value={`${(graph1Ref.current.finishedCount * 60 / (graph1Ref.current.timestamp||1)).toFixed(2)}/min`}
               />
               <MetricCard 
               title="Last Minute Throughput" 
@@ -780,15 +1009,15 @@ export default function PittiViz() {
               <div className="text-pink-700">Strategy 2 : Walkers </div>
               <MetricCard 
               title="People Processed" 
-              value={currentS2Ref.current.finishedCount}
+              value={graph2Ref.current.finishedCount}
               />
               <MetricCard 
               title="Current Queue Length" 
-              value={currentS2Ref.current.queueCount}
+              value={graph2Ref.current.queueCount}
               />
               <MetricCard 
               title="Total Throughput" 
-              value={`${(currentS2Ref.current.finishedCount *60 / (currentS2Ref.current.timestamp || 1)).toFixed(2)}/min`}
+              value={`${(graph2Ref.current.finishedCount *60 / (graph2Ref.current.timestamp || 1)).toFixed(2)}/min`}
               />
               <MetricCard 
               title="Last Minute Throughput" 
