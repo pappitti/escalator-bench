@@ -185,18 +185,16 @@ class EscalatorGraph {
         break;
       }
       const startNode = availableNodes[Math.floor(Math.random() * availableNodes.length)];
+
       const person = new Person(
         performance.now() + Math.random(),
         isWalking,
         walkingSpeed
       );
-      
       person.currentNode = startNode;
       startNode.occupied = person;
       this.people.push(person);
       this.inQueue++;
-
-      console.log("New person", person);
     }
   }
 
@@ -221,18 +219,18 @@ class EscalatorGraph {
           let updatePosition = false;
 
           if (availableNodes.length === 1){
-            if (
-              availableNodes[0].index === node.index 
-              && rand > 0.8 
-              && availableNodes[0].index != aboveLevelHalf
-            ){
-              // only 20% chances to try overtake on the right
+            // if (
+            //   availableNodes[0].index === node.index 
+            //   && rand > 0.8 
+            //   && availableNodes[0].index != aboveLevelHalf
+            // ){
+            //   // only 20% chances to try overtake on the right
+            //   targetNode = availableNodes[0];
+            //   updatePosition = true;
+            // } else if (availableNodes[0].index !== node.index){
               targetNode = availableNodes[0];
               updatePosition = true;
-            } else if (availableNodes[0].index !== node.index){
-              targetNode = availableNodes[0];
-              updatePosition = true;
-            }
+            // }
           } else if (
             availableNodes.length === 2 
             && availableNodes[availableNodes.length-1].index === node.index
@@ -374,6 +372,7 @@ class EscalatorGraph {
           nextNode.occupied = person;
           person.currentNode.occupied = null;
           person.currentNode = nextNode;
+          person.onEscalator = true;
           this.inQueue--;
           this.onEscalator++;
         }
@@ -395,7 +394,7 @@ class EscalatorGraph {
         .filter(node => !node.occupied.isWalking)
         .sort(() => Math.random() - 0.5);
 
-      moveWalkersInQueue(shuffleWalkers);
+      moveWalkersInQueue(shuffleWalkers, aboveLevelHalf);
       moveStandersInQueue(shuffleStanders, aboveLevelHalf);
     
     }
@@ -414,7 +413,7 @@ class EscalatorGraph {
 
     for (let i = 0; i < timescale; i++) {
 
-      const stepNewCount = remainingNewCount < 2 * partialCount ? remainingNewCount : partialCount;
+      const stepNewCount = remainingNewCount < (2 * partialCount) ? remainingNewCount : partialCount;
 
 
       // Add new people
@@ -530,10 +529,10 @@ function StrategySimulation(props) {
   // Drawing
   const canvasRef = useRef(null);
 
-  useEffect(() => {
+  const y = ESCALATOR_TOP_Y / escalatorLength;
+  const x = (CANVAS_WIDTH - 50) / graphQueueLevelsBase ;
 
-    const y = ESCALATOR_TOP_Y/escalatorLength;
-    const x = (CANVAS_WIDTH - 50) / graphQueueLevelsBase ;
+  useEffect(() => {
 
     if (!canvasRef.current) return;
     const ctx = canvasRef.current.getContext("2d");
@@ -561,10 +560,15 @@ function StrategySimulation(props) {
 
     // People
     people.forEach((p) => {
+
       if (p.done) return;
-      const node = p.currentNode;
-      const pY = (node.level + p.onEscalator ? 0 : escalatorLength )* y + y / 2 ;
-      const pX =  CANVAS_WIDTH / 2 + (node.index - 1 - p.onEscalator ? 0 : (node.level)) * x;
+      const pLevel = p.currentNode.level;
+      const pIndex = p.currentNode.index;
+      const escalatorAdjustment = p.onEscalator ? 0 : escalatorLength;
+      const levelAdjustment = p.onEscalator ? 0 : pLevel;
+      const pY = y * ( pLevel + 0.5 + escalatorAdjustment ) ;
+      const pX =  CANVAS_WIDTH / 2 + (pIndex - 1 - levelAdjustment) * x;
+
       ctx.beginPath();
       ctx.arc(pX , pY, PERSON_RADIUS, 0, 2 * Math.PI);
       ctx.fillStyle = p.isWalking ?  "#c6005c" : "#007595" ;
@@ -722,8 +726,9 @@ export default function PittiViz() {
 
     // Accumulate fractional arrivals
     arrivalAccumulatorRef.current += arrivalRate / escalatorSpeed * timescale;
-    let newCount = Math.floor(arrivalAccumulatorRef.current);
-    arrivalAccumulatorRef.current -= newCount;
+    const timeScaledCount = Math.floor(arrivalAccumulatorRef.current/ timescale);
+    let newCount = timeScaledCount * timescale;
+    arrivalAccumulatorRef.current = arrivalAccumulatorRef.current % timescale;
 
     // Run the simulation for each strategy
     const newS1Data = graph1Ref.current.runEscalatorSimulation({
@@ -968,7 +973,7 @@ export default function PittiViz() {
                       people={graph1Ref.current.people}
                       finishedCount={graph1Ref.current.finishedCount}
                   />
-}
+                  }
               </div>
               <div className="flex flex-col items-center bg-gray-100 dark:bg-gray-100/10 p-4 rounded-lg shadow">
                 {graph2Ref?.current &&
@@ -996,15 +1001,15 @@ export default function PittiViz() {
               />
               <MetricCard 
               title="Current Queue Length" 
-              value={graph1Ref.current.queueCount}
+              value={graph1Ref.current.inQueue}
               />
               <MetricCard 
               title="Total Throughput" 
-              value={`${(graph1Ref.current.finishedCount * 60 / (graph1Ref.current.timestamp||1)).toFixed(2)}/min`}
+              value={`${(graph1Ref.current.finishedCount / (graph1Ref.current.timestamp||1)).toFixed(2)}/min`}
               />
               <MetricCard 
               title="Last Minute Throughput" 
-              value={`${(lastMinuteS1.throughput *60 ).toFixed(2)}/min`}
+              value={`${(lastMinuteS1.throughput * 60 ).toFixed(2)}/min`}
               />
               <div className="text-pink-700">Strategy 2 : Walkers </div>
               <MetricCard 
@@ -1013,11 +1018,11 @@ export default function PittiViz() {
               />
               <MetricCard 
               title="Current Queue Length" 
-              value={graph2Ref.current.queueCount}
+              value={graph2Ref.current.inQueue}
               />
               <MetricCard 
               title="Total Throughput" 
-              value={`${(graph2Ref.current.finishedCount *60 / (graph2Ref.current.timestamp || 1)).toFixed(2)}/min`}
+              value={`${(graph2Ref.current.finishedCount / (graph2Ref.current.timestamp || 1)).toFixed(2)}/min`}
               />
               <MetricCard 
               title="Last Minute Throughput" 
