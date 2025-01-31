@@ -5,6 +5,7 @@ import O1Viz from './models/o1'
 import PittiViz from './models/pitti'
 import Dsr1Viz from './models/dsr1'
 import Gemini2Viz from './models/gemini2'
+import Gemini2FlashThinkingExpViz from './models/gemini2-flash-thinking-experimental'
 import './App.css'
 
 function App() {
@@ -12,6 +13,7 @@ function App() {
 
   const modelElements ={
     "o1" : O1Viz,
+    "Gemini 2 Flash Thinking Experimental" : Gemini2FlashThinkingExpViz,
     "Gemini 2 Experimental" : Gemini2Viz,
     "Claude" : ClaudeViz, 
     "DeepSeek r1" : Dsr1Viz,
@@ -24,9 +26,13 @@ function App() {
 
   return (
     <div className="w-full h-full flex flex-col items-center justify-start">
-      <div className='flex flex-row items-center justify-center gap-4'>
+      <div className='flex flex-row items-center justify-center gap-4 overflow-x-auto h-20'>
         {Object.keys(modelElements).map((key) => (
-          <button key={key} onClick={() => setAssistant(key)}>
+          <button 
+            className="flex h-full min-w-[150px] justify-center items-center"
+            key={key} 
+            onClick={() => setAssistant(key)
+          }>
             {key}
           </button>
         ))}

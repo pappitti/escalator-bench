@@ -290,112 +290,115 @@ function Gemini2Viz() {
     };
 
     return (
-        <div className="container mx-auto p-4 flex">
-            {/* Left Column: Inputs */}
-            <div className="w-1/2 pr-4">
-                <h2 className="text-xl font-bold mb-4">Escalator Simulation</h2>
+        <div className="w-full h-full flex flex-col items-center justify-start">
+            <div><em>Note : Gemini 2.0 Experimental built this in one shot </em></div>
+            <div className="container mx-auto p-4 flex">
+                {/* Left Column: Inputs */}
+                <div className="w-1/2 pr-4">
+                    <h2 className="text-xl font-bold mb-4">Escalator Simulation</h2>
 
-                {/* Escalator Variables */}
-                <div className="mb-4">
-                    <h3 className="font-semibold mb-2">Escalator Variables</h3>
-                    <div className="mb-2">
-                        <label htmlFor="escalatorLength" className="block mb-1">Length (m):</label>
-                        <input
-                            type="number"
-                            id="escalatorLength"
-                            value={escalatorLength}
-                            onChange={(e) => setEscalatorLength(parseFloat(e.target.value))}
-                            className="w-full border border-gray-400 px-2 py-1"
-                        />
+                    {/* Escalator Variables */}
+                    <div className="mb-4">
+                        <h3 className="font-semibold mb-2">Escalator Variables</h3>
+                        <div className="mb-2">
+                            <label htmlFor="escalatorLength" className="block mb-1">Length (m):</label>
+                            <input
+                                type="number"
+                                id="escalatorLength"
+                                value={escalatorLength}
+                                onChange={(e) => setEscalatorLength(parseFloat(e.target.value))}
+                                className="w-full border border-gray-400 px-2 py-1"
+                            />
+                        </div>
+                        <div className="mb-2">
+                            <label htmlFor="escalatorSpeed" className="block mb-1">Speed (m/s):</label>
+                            <input
+                                type="number"
+                                id="escalatorSpeed"
+                                value={escalatorSpeed}
+                                onChange={(e) => setEscalatorSpeed(parseFloat(e.target.value))}
+                                className="w-full border border-gray-400 px-2 py-1"
+                            />
+                        </div>
                     </div>
-                    <div className="mb-2">
-                        <label htmlFor="escalatorSpeed" className="block mb-1">Speed (m/s):</label>
-                        <input
-                            type="number"
-                            id="escalatorSpeed"
-                            value={escalatorSpeed}
-                            onChange={(e) => setEscalatorSpeed(parseFloat(e.target.value))}
-                            className="w-full border border-gray-400 px-2 py-1"
-                        />
+
+                    {/* People Variables */}
+                    <div className="mb-4">
+                        <h3 className="font-semibold mb-2">People Variables</h3>
+                        <div className="mb-2">
+                            <label htmlFor="totalPeople" className="block mb-1">Total People:</label>
+                            <input
+                                type="number"
+                                id="totalPeople"
+                                value={totalPeople}
+                                onChange={(e) => setTotalPeople(parseInt(e.target.value))}
+                                className="w-full border border-gray-400 px-2 py-1"
+                            />
+                        </div>
+                        <div className="mb-2">
+                            <label htmlFor="percentWalking" className="block mb-1">% Walking:</label>
+                            <input
+                                type="number"
+                                id="percentWalking"
+                                value={percentWalking}
+                                onChange={(e) => setPercentWalking(parseFloat(e.target.value))}
+                                className="w-full border border-gray-400 px-2 py-1"
+                            />
+                        </div>
+                        <div className="mb-2">
+                            <label htmlFor="avgWalkingSpeed" className="block mb-1">Avg. Walking Speed (m/s):</label>
+                            <input
+                                type="number"
+                                id="avgWalkingSpeed"
+                                value={avgWalkingSpeed}
+                                onChange={(e) => setAvgWalkingSpeed(parseFloat(e.target.value))}
+                                className="w-full border border-gray-400 px-2 py-1"
+                            />
+                        </div>
+                        <div className="mb-2">
+                            <label htmlFor="walkingSpeedStdDev" className="block mb-1">Walking Speed Std. Dev.:</label>
+                            <input
+                                type="number"
+                                id="walkingSpeedStdDev"
+                                value={walkingSpeedStdDev}
+                                onChange={(e) => setWalkingSpeedStdDev(parseFloat(e.target.value))}
+                                className="w-full border border-gray-400 px-2 py-1"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Simulation Controls */}
+                    <div className="mb-4">
+                        <button
+                            onClick={handleStartStop}
+                            className={`bg-${isRunning ? 'red' : 'green'}-500 hover:bg-${isRunning ? 'red' : 'green'}-700 text-white font-bold py-2 px-4 rounded mr-2`}
+                        >
+                            {isRunning ? 'Stop' : 'Start'}
+                        </button>
+                        <button
+                            onClick={handleReset}
+                            className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+                        >
+                            Reset
+                        </button>
                     </div>
                 </div>
 
-                {/* People Variables */}
-                <div className="mb-4">
-                    <h3 className="font-semibold mb-2">People Variables</h3>
-                    <div className="mb-2">
-                        <label htmlFor="totalPeople" className="block mb-1">Total People:</label>
-                        <input
-                            type="number"
-                            id="totalPeople"
-                            value={totalPeople}
-                            onChange={(e) => setTotalPeople(parseInt(e.target.value))}
-                            className="w-full border border-gray-400 px-2 py-1"
-                        />
+                {/* Right Column: Visualization and Statistics */}
+                <div className="w-1/2">
+                    <div className="mb-4">
+                        <canvas ref={animationRef} width="300" height="400" className="border border-gray-400"></canvas>
                     </div>
-                    <div className="mb-2">
-                        <label htmlFor="percentWalking" className="block mb-1">% Walking:</label>
-                        <input
-                            type="number"
-                            id="percentWalking"
-                            value={percentWalking}
-                            onChange={(e) => setPercentWalking(parseFloat(e.target.value))}
-                            className="w-full border border-gray-400 px-2 py-1"
-                        />
-                    </div>
-                    <div className="mb-2">
-                        <label htmlFor="avgWalkingSpeed" className="block mb-1">Avg. Walking Speed (m/s):</label>
-                        <input
-                            type="number"
-                            id="avgWalkingSpeed"
-                            value={avgWalkingSpeed}
-                            onChange={(e) => setAvgWalkingSpeed(parseFloat(e.target.value))}
-                            className="w-full border border-gray-400 px-2 py-1"
-                        />
-                    </div>
-                    <div className="mb-2">
-                        <label htmlFor="walkingSpeedStdDev" className="block mb-1">Walking Speed Std. Dev.:</label>
-                        <input
-                            type="number"
-                            id="walkingSpeedStdDev"
-                            value={walkingSpeedStdDev}
-                            onChange={(e) => setWalkingSpeedStdDev(parseFloat(e.target.value))}
-                            className="w-full border border-gray-400 px-2 py-1"
-                        />
-                    </div>
-                </div>
 
-                {/* Simulation Controls */}
-                <div className="mb-4">
-                    <button
-                        onClick={handleStartStop}
-                        className={`bg-${isRunning ? 'red' : 'green'}-500 hover:bg-${isRunning ? 'red' : 'green'}-700 text-white font-bold py-2 px-4 rounded mr-2`}
-                    >
-                        {isRunning ? 'Stop' : 'Start'}
-                    </button>
-                    <button
-                        onClick={handleReset}
-                        className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
-                    >
-                        Reset
-                    </button>
-                </div>
-            </div>
-
-            {/* Right Column: Visualization and Statistics */}
-            <div className="w-1/2">
-                <div className="mb-4">
-                    <canvas ref={animationRef} width="300" height="400" className="border border-gray-400"></canvas>
-                </div>
-
-                {/* Statistics */}
-                <div className="mb-4">
-                    <h3 className="font-semibold mb-2">Statistics</h3>
-                    <p>Time: {time.toFixed(1)} s</p>
-                    <p>People at Bottom: {peopleAtBottom}</p>
-                    <p>People on Escalator: {peopleOnEscalator}</p>
-                    <p>People Reached Top: {peopleReachedTop}</p>
-                    <p>Flow Rate: {flowRate.toFixed(2)} people/min</p>
+                    {/* Statistics */}
+                    <div className="mb-4">
+                        <h3 className="font-semibold mb-2">Statistics</h3>
+                        <p>Time: {time.toFixed(1)} s</p>
+                        <p>People at Bottom: {peopleAtBottom}</p>
+                        <p>People on Escalator: {peopleOnEscalator}</p>
+                        <p>People Reached Top: {peopleReachedTop}</p>
+                        <p>Flow Rate: {flowRate.toFixed(2)} people/min</p>
+                    </div>
                 </div>
             </div>
         </div>

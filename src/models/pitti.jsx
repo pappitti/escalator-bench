@@ -771,6 +771,7 @@ export default function PittiViz() {
 
   return (
     <div className="flex flex-col items-center w-full bg-gray-100 p-8 dark:bg-gray-100/10 rounded-xl">
+      <div><em>Note : this was built over tens of hours</em></div>
       <h1 className="text-2xl w-full font-bold mb-8">Escalator Simulation</h1>
       <div className="w-full flex gap-4">
         {/* Left Panel: Controls */}
