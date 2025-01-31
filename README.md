@@ -3,6 +3,7 @@
 For three weeks in 2015, researchers asked [commuters in London](https://www.bbc.co.uk/news/uk-england-london-34926581) not to walk up the escalator to find out the optimal strategy at rush hours.  
 This seems like a reasonably easy thing to model and simulate without annoying anyone for three weeks. But is it?  
 In this project, we ask different AI models to do the work of researchers... in less than 5 minutes. The objective is to challenge the claims that large language models can now fully automate scientific research.  
+  
 There are several dimensions to the research:
 - a modelling challenge (passenger flow)
 - a simulation challenge (high-level game engine)
@@ -11,7 +12,7 @@ There are several dimensions to the research:
 See project page [here](https://www.pitti.io/projects/escalator-benchmark) 
   
 ## Prompt
-LLMs, and reasoners in particular, can be extremely helpful to the extent that you provide sufficient context. This exact prompt has been used for all the model outputs presented in this project.
+LLMs, and reasoners in particular, can be extremely helpful to the extent that you provide sufficient context. This exact prompt has been used for all the model outputs presented in this project.  
 
 ```
 # Project description  
@@ -50,10 +51,16 @@ npm run dev
 ```
 
 ## Prelimimary findings
-While the models are definitely useful to lay the foundations of a project, the claims that AI models can already fully automate research seem largely overblown. Here, the math is trivial and any undergrad with a math background would find a way to incorporate it in the modelling. It is basically about making the right choices. And on the UI side, it is also clear that you still need human involvement to piece everything together and give models a little nudge when they start going off-track.
+While the models are definitely useful to lay the foundations of a project, the claims that AI models can already fully automate research seem largely overblown. Here, the math is trivial and any undergrad with a math background would find a way to incorporate it in the modelling. It is basically about making the right choices. And on the UI side, it is also clear that you still need human involvement to piece everything together and give models a little nudge when they start going off-track.  
+  
+To illustrate the takeaways of this project, I mapped each model output (very subjectively and in the most un-scientific way possible): 
+-  X-axis : for the UI
+- Y-axis : for the reasoning  
+  
 ![Escalator Benchmark](https://pitti-backend-assets.ams3.cdn.digitaloceanspaces.com/escalator-benchmark/benchmarkplot.png "Escalator Benchmark")
 
 ## Contribute (both humans and AI suggestions)
 - Create a new component in src/models 
 - import in App.jsx (should be self explanatory)
 - submit PR
+*Feel free to propose alternative prompts for this project*
