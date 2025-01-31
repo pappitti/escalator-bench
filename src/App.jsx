@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import ClaudeViz from './models/claude'
 import DeepseekR1Qwen32BViz from './models/dsr1q32b'
+import O3MiniViz from './models/o3-mini'
 import O1Viz from './models/o1'
 import PittiViz from './models/pitti'
 import Dsr1Viz from './models/dsr1'
@@ -12,6 +13,7 @@ function App() {
   const [assistant, setAssistant] = useState("Claude")
 
   const modelElements ={
+    "o3-mini" : O3MiniViz,
     "o1" : O1Viz,
     "Gemini 2 Flash Thinking Experimental" : Gemini2FlashThinkingExpViz,
     "Gemini 2 Experimental" : Gemini2Viz,
