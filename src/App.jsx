@@ -6,6 +6,7 @@ import O1Viz from './models/o1'
 import PittiViz from './models/pitti'
 import Dsr1Viz from './models/dsr1'
 import Gemini2Viz from './models/gemini2'
+import Gemini2ProViz from './models/gemini2-pro'
 import Gemini2FlashThinkingExpViz from './models/gemini2-flash-thinking-experimental'
 import './App.css'
 
@@ -15,6 +16,7 @@ function App() {
   const modelElements ={
     "o3-mini" : O3MiniViz,
     "o1" : O1Viz,
+    "Gemini 2 Pro" : Gemini2ProViz,
     "Gemini 2 Flash Thinking Experimental" : Gemini2FlashThinkingExpViz,
     "Gemini 2 Experimental" : Gemini2Viz,
     "Claude" : ClaudeViz, 

@@ -204,7 +204,7 @@ const O3MiniViz = () => {
 
   return (
     <div className="w-full bg-gray-100 p-4">
-      <div><em>Note : o1 built this in one shot </em></div>
+      <div><em>Note : o3-mini built this in one shot </em></div>
       <div className="flex flex-row h-screen">
         {/* Left Column: Inputs and Statistics */}
         <div className="w-1/3 p-4 bg-gray-100 overflow-auto">
