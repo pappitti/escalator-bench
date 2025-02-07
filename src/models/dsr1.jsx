@@ -163,8 +163,8 @@ function DSr1Viz() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4">
-        <div><em>Note : o1 built this in one shot </em></div>
+    <div className="min-h-screen bg-gray-100 p-4 w-full">
+        <div><em>Note : r1 built this in one shot </em></div>
         <div className="flex h-screen bg-gray-100">
         {/* Left Column - Inputs */}
         <div className="w-1/3 p-4 space-y-4">

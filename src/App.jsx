@@ -5,13 +5,14 @@ import O3MiniViz from './models/o3-mini'
 import O1Viz from './models/o1'
 import PittiViz from './models/pitti'
 import Dsr1Viz from './models/dsr1'
+import MistralViz from './models/mistral-not-sure'
 import Gemini2Viz from './models/gemini2'
 import Gemini2ProViz from './models/gemini2-pro'
 import Gemini2FlashThinkingExpViz from './models/gemini2-flash-thinking-experimental'
 import './App.css'
 
 function App() {
-  const [assistant, setAssistant] = useState("Claude")
+  const [assistant, setAssistant] = useState("Claude Sonnet 3.5")
 
   const modelElements ={
     "o3-mini" : O3MiniViz,
@@ -19,7 +20,8 @@ function App() {
     "Gemini 2 Pro" : Gemini2ProViz,
     "Gemini 2 Flash Thinking Experimental" : Gemini2FlashThinkingExpViz,
     "Gemini 2 Experimental" : Gemini2Viz,
-    "Claude" : ClaudeViz, 
+    "Claude Sonnet 3.5" : ClaudeViz, 
+    "Mistral [Not sure]" : MistralViz,
     "DeepSeek r1" : Dsr1Viz,
     "DeepSeek r1 Distill Qwen2.5-32B" : DeepseekR1Qwen32BViz,
     "Pitti, o1 and Claude" : PittiViz
@@ -30,7 +32,7 @@ function App() {
 
   return (
     <div className="w-full h-full flex flex-col items-center justify-start">
-      <div className='flex flex-row items-center justify-center gap-4 overflow-x-auto h-20'>
+      <div className='flex flex-row max-w-full items-center justify-start gap-4 overflow-hidden overflow-x-scroll h-20'>
         {Object.keys(modelElements).map((key) => (
           <button 
             className="flex h-full min-w-[150px] justify-center items-center"
