@@ -8,7 +8,7 @@ const CANVAS_WIDTH = 600;
 const CANVAS_HEIGHT = 400;
 const PERSON_RADIUS = 5;
 
-const   ClaudeViz = () => {
+const ClaudeSonnet35Viz = () => {
   // Simulation parameters
   const [params, setParams] = useState({
     escalatorLength: 30, // meters
@@ -301,4 +301,4 @@ const   ClaudeViz = () => {
   );
 };
 
-export default ClaudeViz;
+export default ClaudeSonnet35Viz;

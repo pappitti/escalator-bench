@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import ClaudeViz from './models/claude'
+import ClaudeSonnet35Viz from './models/claude-sonnet-35'
+import ClaudeSonnet37Viz from './models/claude-sonnet-37'
 import DeepseekR1Qwen32BViz from './models/dsr1q32b'
 import O3MiniViz from './models/o3-mini'
 import O1Viz from './models/o1'
@@ -12,15 +13,16 @@ import Gemini2FlashThinkingExpViz from './models/gemini2-flash-thinking-experime
 import './App.css'
 
 function App() {
-  const [assistant, setAssistant] = useState("Claude Sonnet 3.5")
+  const [assistant, setAssistant] = useState("Claude Sonnet 3.7")
 
   const modelElements ={
+    "Claude Sonnet 3.7" : ClaudeSonnet37Viz, 
     "o3-mini" : O3MiniViz,
     "o1" : O1Viz,
     "Gemini 2 Pro" : Gemini2ProViz,
     "Gemini 2 Flash Thinking Experimental" : Gemini2FlashThinkingExpViz,
     "Gemini 2 Experimental" : Gemini2Viz,
-    "Claude Sonnet 3.5" : ClaudeViz, 
+    "Claude Sonnet 3.5" : ClaudeSonnet35Viz, 
     "Mistral [Not sure]" : MistralViz,
     "DeepSeek r1" : Dsr1Viz,
     "DeepSeek r1 Distill Qwen2.5-32B" : DeepseekR1Qwen32BViz,
@@ -31,11 +33,11 @@ function App() {
   const CurrentComponent = modelElements[assistant]
 
   return (
-    <div className="w-full h-full flex flex-col items-center justify-start">
-      <div className='flex flex-row max-w-full items-center justify-start gap-4 overflow-hidden overflow-x-scroll h-20'>
+    <div className="min-w-full h-screen flex items-center justify-center gap-4">
+      <div className='flex flex-1 flex-col h-full items-start justify-start gap-4 overflow-hidden overflow-y-scroll'>
         {Object.keys(modelElements).map((key) => (
           <button 
-            className="flex h-full min-w-[150px] justify-center items-center"
+            className={`flex w-full justify-center items-center ${assistant === key ? 'border-blue-500 border-2' : ''}`}
             key={key} 
             onClick={() => setAssistant(key)
           }>
@@ -43,9 +45,11 @@ function App() {
           </button>
         ))}
       </div>
-      <h1 className="text-2xl my-[30px]">{assistant}</h1>
-      <div className="flex w-full h-full">
-        <CurrentComponent />
+      <div className="h-screen flex-5 flex flex-col items-center overflow-hidden overflow-y-scroll">
+        <h1 className="text-2xl font-bold my-[30px]">{assistant}</h1>
+        <div className="flex w-full h-full">
+          <CurrentComponent />
+        </div>
       </div>
     </div>
   )
