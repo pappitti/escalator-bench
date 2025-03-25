@@ -9,6 +9,7 @@ import Dsr1Viz from './models/dsr1'
 import MistralViz from './models/mistral-not-sure'
 import Gemini2Viz from './models/gemini2'
 import Gemini2ProViz from './models/gemini2-pro'
+import Gemini25ProViz from './models/gemini2.5-pro'
 import Gemini2FlashThinkingExpViz from './models/gemini2-flash-thinking-experimental'
 import QwQViz from './models/qwq32b'
 import Dsv3Viz from './models/dsv3'
@@ -18,18 +19,19 @@ function App() {
   const [assistant, setAssistant] = useState("Claude Sonnet 3.7")
 
   const modelElements ={
-    "Claude Sonnet 3.7" : ClaudeSonnet37Viz, 
-    "o3-mini" : O3MiniViz,
-    "o1" : O1Viz,
-    "Gemini 2 Pro" : Gemini2ProViz,
-    "Gemini 2 Flash Thinking Experimental" : Gemini2FlashThinkingExpViz,
-    "Gemini 2 Experimental" : Gemini2Viz,
-    "Claude Sonnet 3.5" : ClaudeSonnet35Viz, 
-    "Mistral [Not sure]" : MistralViz,
-    "DeepSeek r1" : Dsr1Viz,
+    "Gemini 2.5 Pro" : Gemini25ProViz,
     "DeepSeek v3 0324" : Dsv3Viz,
     "QwQ32B" : QwQViz,
+    "Claude Sonnet 3.7" : ClaudeSonnet37Viz, 
+    "Mistral [Not sure]" : MistralViz,
+    "DeepSeek r1" : Dsr1Viz,
     "DeepSeek r1 Distill Qwen2.5-32B" : DeepseekR1Qwen32BViz,
+    "o3-mini" : O3MiniViz,
+    "Gemini 2 Pro" : Gemini2ProViz,
+    "Gemini 2 Flash Thinking Experimental" : Gemini2FlashThinkingExpViz,
+    "o1" : O1Viz,
+    "Gemini 2 Experimental" : Gemini2Viz,
+    "Claude Sonnet 3.5" : ClaudeSonnet35Viz, 
     "Pitti, o1 and Claude" : PittiViz
   }
 
