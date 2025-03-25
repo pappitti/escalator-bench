@@ -11,6 +11,7 @@ import Gemini2Viz from './models/gemini2'
 import Gemini2ProViz from './models/gemini2-pro'
 import Gemini2FlashThinkingExpViz from './models/gemini2-flash-thinking-experimental'
 import QwQViz from './models/qwq32b'
+import Dsv3Viz from './models/dsv3'
 import './App.css'
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
     "Claude Sonnet 3.5" : ClaudeSonnet35Viz, 
     "Mistral [Not sure]" : MistralViz,
     "DeepSeek r1" : Dsr1Viz,
+    "DeepSeek v3 0324" : Dsv3Viz,
     "QwQ32B" : QwQViz,
     "DeepSeek r1 Distill Qwen2.5-32B" : DeepseekR1Qwen32BViz,
     "Pitti, o1 and Claude" : PittiViz
