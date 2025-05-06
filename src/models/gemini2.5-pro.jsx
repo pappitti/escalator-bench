@@ -418,7 +418,7 @@ function Gemini25ProViz() {
 
   return (
     <div className="container mx-auto p-4">
-      <div><em>Note : Gemini 2.5 Pro code built this in 2 shots (UI and logic were similar in first shot but state wouldn't update between simulation steps)</em></div>
+      <div><em>Note : Gemini 2.5 Pro 03-14 built this in 2 shots (UI and logic were similar in first shot but state wouldn't update between simulation steps)</em></div>
       <div className="flex flex-col md:flex-row min-h-screen bg-gray-100">
         {/* Left Column: Controls */}
         <div className="w-full md:w-1/3 lg:w-1/4 p-4 bg-white shadow-md">
