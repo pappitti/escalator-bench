@@ -21,7 +21,7 @@ function App() {
 
   const modelElements ={
     "Gemini 2.5 Pro 05-06" : Gemini25Pro0506Viz,
-    "Gemini 2.5 Pro 03-14" : Gemini25ProViz,
+    "Gemini 2.5 Pro 03-25" : Gemini25ProViz,
     "DeepSeek v3 0324" : Dsv3Viz,
     "QwQ32B" : QwQViz,
     "Claude Sonnet 3.7" : ClaudeSonnet37Viz, 
