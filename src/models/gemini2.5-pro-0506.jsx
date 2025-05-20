@@ -1,3 +1,7 @@
+/****************************************************** 
+ * LICENCE : GEMINI 2.5 PRO 0506 OUTPUT
+*******************************************************/
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
