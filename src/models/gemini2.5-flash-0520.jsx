@@ -1,5 +1,5 @@
 /****************************************************** 
- * LICENCE : GEMINI 2.5 PRO 0520 OUTPUT
+ * LICENCE : GEMINI 2.5 Flash 0520 OUTPUT
 *******************************************************/
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -618,7 +618,7 @@ const EscalatorSimulator = ({ inputs, simulationRunning, onToggleSimulation, onR
     );
 };
 
-function Gemini25pro0520Viz() {
+function Gemini25Flash0520Viz() {
 
     const [inputs, setInputs] = useState({
         escalatorLength: 10,       // meters
@@ -664,7 +664,7 @@ function Gemini25pro0520Viz() {
 
     return (
         <div className="container mx-auto p-4">
-            <div><em>Note : Gemini 2.5 Pro 05-06 built this in 2 shots (typical issue with state update through hooks)</em></div>
+            <div><em>Note : Gemini 2.5 Flash 05-06 built this in 2 shots (typical issue with state update through hooks)</em></div>
             <div className="min-h-screen bg-gray-50 p-6 font-sans antialiased">
                 <h1 className="text-4xl font-extrabold text-center text-gray-800 mb-8">
                     Optimal Escalator Strategy Simulator
@@ -697,4 +697,4 @@ function Gemini25pro0520Viz() {
    
 }
 
-export default Gemini25pro0520Viz;
+export default Gemini25Flash0520Viz;
