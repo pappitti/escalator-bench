@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import ClaudeOpus4Viz from './models/claude-opus-4'
+import ClaudeSonnet4Viz from './models/claude-sonnet-4'
 import ClaudeSonnet35Viz from './models/claude-sonnet-35'
 import ClaudeSonnet37Viz from './models/claude-sonnet-37'
 import DeepseekR1Qwen32BViz from './models/dsr1q32b'
@@ -21,6 +23,8 @@ function App() {
   const [assistant, setAssistant] = useState("Claude Sonnet 3.7")
 
   const modelElements ={
+    "Claude Opus 4" : ClaudeOpus4Viz,
+    "Claude Sonnet 4" : ClaudeSonnet4Viz,
     "Gemini 2.5 Flash 05-20" : Gemini25Flash0520Viz,
     "Gemini 2.5 Pro 05-06" : Gemini25Pro0506Viz,
     "Gemini 2.5 Pro 03-25" : Gemini25ProViz,
