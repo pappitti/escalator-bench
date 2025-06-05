@@ -14,6 +14,7 @@ import Gemini2ProViz from './models/gemini2-pro'
 import Gemini25ProViz from './models/gemini2.5-pro'
 import Gemini25Pro0506Viz from './models/gemini2.5-pro-0506'
 import Gemini25Flash0520Viz from './models/gemini2.5-flash-0520'
+import Gemini25Pro0605Viz from './models/gemini2.5-pro-0605'
 import Gemini2FlashThinkingExpViz from './models/gemini2-flash-thinking-experimental'
 import QwQViz from './models/qwq32b'
 import Dsv3Viz from './models/dsv3'
@@ -23,6 +24,7 @@ function App() {
   const [assistant, setAssistant] = useState("Claude Sonnet 3.7")
 
   const modelElements ={
+    "Gemini 2.5 Pro 06-05" : Gemini25Pro0605Viz,
     "Claude Opus 4" : ClaudeOpus4Viz,
     "Claude Sonnet 4" : ClaudeSonnet4Viz,
     "Gemini 2.5 Flash 05-20" : Gemini25Flash0520Viz,
