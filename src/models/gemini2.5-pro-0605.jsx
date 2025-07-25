@@ -477,47 +477,50 @@ function Gemini25Pro0605Viz() {
   }, [params, timeElapsed]);
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white font-sans">
-      <header className="text-center py-4 border-b border-gray-700">
-        <h1 className="text-3xl font-bold text-cyan-400">Escalator Strategy Simulator</h1>
-        <p className="text-gray-400">Stand Still vs. Walk & Stand</p>
-      </header>
+    <div className="container mx-auto p-4">
+      <div><em>Note : Gemini 2.5 Pro 06-05 built this in 1 shot</em></div>
+      <div className="min-h-screen bg-gray-900 text-white font-sans">
+        <header className="text-center py-4 border-b border-gray-700">
+          <h1 className="text-3xl font-bold text-cyan-400">Escalator Strategy Simulator</h1>
+          <p className="text-gray-400">Stand Still vs. Walk & Stand</p>
+        </header>
 
-      <div className="flex flex-col lg:flex-row p-4 gap-4">
-        {/* Left Column: Inputs */}
-        <div className="lg:w-1/3 bg-gray-800 rounded-lg p-6 shadow-lg">
-          <InputPanel
-            params={params}
-            onParamChange={handleParamChange}
-            isRunning={isRunning}
-          />
-          <div className="mt-6 flex space-x-4">
-            <button
-              onClick={isRunning ? pauseSimulation : startSimulation}
-              className="flex-1 bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-4 rounded-lg transition duration-300 flex items-center justify-center"
-            >
-              {isRunning ? <Pause className="mr-2" /> : <Play className="mr-2" />}
-              {isRunning ? 'Pause' : 'Start'}
-            </button>
-            <button
-              onClick={() => resetSimulation(params)}
-              className="flex-1 bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 px-4 rounded-lg transition duration-300 flex items-center justify-center"
-            >
-              <RefreshCw className="mr-2" />
-              Reset
-            </button>
+        <div className="flex flex-col lg:flex-row p-4 gap-4">
+          {/* Left Column: Inputs */}
+          <div className="lg:w-1/3 bg-gray-800 rounded-lg p-6 shadow-lg">
+            <InputPanel
+              params={params}
+              onParamChange={handleParamChange}
+              isRunning={isRunning}
+            />
+            <div className="mt-6 flex space-x-4">
+              <button
+                onClick={isRunning ? pauseSimulation : startSimulation}
+                className="flex-1 bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-4 rounded-lg transition duration-300 flex items-center justify-center"
+              >
+                {isRunning ? <Pause className="mr-2" /> : <Play className="mr-2" />}
+                {isRunning ? 'Pause' : 'Start'}
+              </button>
+              <button
+                onClick={() => resetSimulation(params)}
+                className="flex-1 bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 px-4 rounded-lg transition duration-300 flex items-center justify-center"
+              >
+                <RefreshCw className="mr-2" />
+                Reset
+              </button>
+            </div>
           </div>
-        </div>
 
-        {/* Right Column: Simulation & Stats */}
-        <div className="lg:w-2/3 bg-gray-800 rounded-lg p-6 shadow-lg">
-          <SimulationDisplay 
-            people={people}
-            stats={stats}
-            strategy1Stats={strategy1Stats}
-            params={params}
-            timeElapsed={timeElapsed}
-          />
+          {/* Right Column: Simulation & Stats */}
+          <div className="lg:w-2/3 bg-gray-800 rounded-lg p-6 shadow-lg">
+            <SimulationDisplay 
+              people={people}
+              stats={stats}
+              strategy1Stats={strategy1Stats}
+              params={params}
+              timeElapsed={timeElapsed}
+            />
+          </div>
         </div>
       </div>
     </div>

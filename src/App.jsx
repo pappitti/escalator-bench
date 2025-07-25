@@ -8,6 +8,8 @@ import O3MiniViz from './models/o3-mini'
 import O1Viz from './models/o1'
 import PittiViz from './models/pitti'
 import Dsr1Viz from './models/dsr1'
+import DSR10528Viz from './models/dsr1-0528'
+import Dsv3Viz from './models/dsv3'
 import MistralViz from './models/mistral-not-sure'
 import Gemini2Viz from './models/gemini2'
 import Gemini2ProViz from './models/gemini2-pro'
@@ -17,14 +19,17 @@ import Gemini25Flash0520Viz from './models/gemini2.5-flash-0520'
 import Gemini25Pro0605Viz from './models/gemini2.5-pro-0605'
 import Gemini2FlashThinkingExpViz from './models/gemini2-flash-thinking-experimental'
 import QwQViz from './models/qwq32b'
-import Dsv3Viz from './models/dsv3'
+import Qwen3CoderViz from './models/qwen3-coder-480B-A35B-Instruct'
+
 import './App.css'
 
 function App() {
-  const [assistant, setAssistant] = useState("Claude Sonnet 3.7")
+  const [assistant, setAssistant] = useState("Gemini 2.5 Pro 06-05")
 
   const modelElements ={
+    "Qwen 3 Coder 480B A35B Instruct": Qwen3CoderViz,
     "Gemini 2.5 Pro 06-05" : Gemini25Pro0605Viz,
+    "DeepSeek r1 0528" : DSR10528Viz,
     "Claude Opus 4" : ClaudeOpus4Viz,
     "Claude Sonnet 4" : ClaudeSonnet4Viz,
     "Gemini 2.5 Flash 05-20" : Gemini25Flash0520Viz,
