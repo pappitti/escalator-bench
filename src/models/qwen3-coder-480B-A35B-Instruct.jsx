@@ -127,7 +127,7 @@ const Qwen3CoderViz = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <div><em>Note : Gemini 2.5 Pro 06-05 built this in 1 shot</em></div>
+      <div><em>Note : Qwen3 Coder 480B-A35B built this in 1 shot</em></div>
       <div className="min-h-screen bg-gray-100 p-6">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-3xl font-bold text-center mb-6">Escalator Strategy Simulator</h1>

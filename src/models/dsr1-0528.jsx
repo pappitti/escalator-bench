@@ -190,6 +190,8 @@ const DSR10528Viz = () => {
   ];
 
   return (
+    <div className="container mx-auto p-4">
+      <div><em>Note : DeepSeek R1 0528 built this in 1 shot (it does not work)</em></div>
     <div className="flex flex-col md:flex-row gap-8 p-4 max-w-6xl mx-auto">
       {/* Left Column - Inputs */}
       <div className="w-full md:w-1/3 space-y-8">
@@ -478,6 +480,7 @@ const DSR10528Viz = () => {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 };

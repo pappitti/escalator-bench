@@ -18,6 +18,7 @@ import Gemini25Pro0506Viz from './models/gemini2.5-pro-0506'
 import Gemini25Flash0520Viz from './models/gemini2.5-flash-0520'
 import Gemini25Pro0605Viz from './models/gemini2.5-pro-0605'
 import Gemini2FlashThinkingExpViz from './models/gemini2-flash-thinking-experimental'
+import KimiK2Viz from './models/kimi-k2'
 import QwQViz from './models/qwq32b'
 import Qwen3CoderViz from './models/qwen3-coder-480B-A35B-Instruct'
 
@@ -28,6 +29,7 @@ function App() {
 
   const modelElements ={
     "Qwen 3 Coder 480B A35B Instruct": Qwen3CoderViz,
+    "Kimi K2": KimiK2Viz,
     "Gemini 2.5 Pro 06-05" : Gemini25Pro0605Viz,
     "DeepSeek r1 0528" : DSR10528Viz,
     "Claude Opus 4" : ClaudeOpus4Viz,
