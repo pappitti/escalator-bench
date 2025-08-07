@@ -12,7 +12,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-export function createSimulation(params) {
+function createSimulation(params) {
   return {
     nextId: 0,
     passengers: [],
@@ -21,7 +21,7 @@ export function createSimulation(params) {
   };
 }
 
-export function step(state, params) {
+function step(state, params) {
   const { dtSec } = params;
 
   // -------------------------------------------------------------
