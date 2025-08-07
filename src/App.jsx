@@ -21,6 +21,7 @@ import Gemini2FlashThinkingExpViz from './models/gemini2-flash-thinking-experime
 import KimiK2Viz from './models/kimi-k2'
 import QwQViz from './models/qwq32b'
 import Qwen3CoderViz from './models/qwen3-coder-480B-A35B-Instruct'
+import GPTOss120BViz from './models/gpt-oss-120b'
 
 import './App.css'
 
@@ -28,6 +29,7 @@ function App() {
   const [assistant, setAssistant] = useState("Gemini 2.5 Pro 06-05")
 
   const modelElements ={
+    "GPT-OSS 120B": GPTOss120BViz,
     "Qwen 3 Coder 480B A35B Instruct": Qwen3CoderViz,
     "Kimi K2": KimiK2Viz,
     "Gemini 2.5 Pro 06-05" : Gemini25Pro0605Viz,
