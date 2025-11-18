@@ -1,5 +1,5 @@
 /****************************************************** 
- * LICENCE : DEEPSEEK R1 OUTPUT (SERVED VIA HYPERBOLIC)
+ * LICENSE : DEEPSEEK R1 OUTPUT (SERVED VIA HYPERBOLIC)
 *******************************************************/
 
 import { useState, useEffect, useRef } from 'react';

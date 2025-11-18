@@ -1,5 +1,5 @@
 /****************************************************** 
- * LICENCE : CLAUDE OPUS 4.1 OUTPUT
+ * LICENSE : CLAUDE OPUS 4.1 OUTPUT
 *******************************************************/
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Play, Pause, RotateCcw, Users, TrendingUp, Clock, Activity } from 'lucide-react';

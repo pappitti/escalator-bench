@@ -1,5 +1,5 @@
 /****************************************************** 
- * LICENCE : GEMINI 2.0 FLASH THINKING EXPERIMENTAL OUTPUT
+ * LICENSE : GEMINI 2.0 FLASH THINKING EXPERIMENTAL OUTPUT
 *******************************************************/
 
 import React, { useState, useEffect, useRef } from 'react';

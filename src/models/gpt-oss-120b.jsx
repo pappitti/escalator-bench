@@ -1,5 +1,5 @@
 /****************************************************** 
- * LICENCE : GPT-OSS-120B APACHE-2.0
+ * LICENSE : GPT-OSS-120B APACHE-2.0
 *******************************************************/
 import React, { useState, useEffect, useRef } from "react";
 import {

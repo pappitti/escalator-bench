@@ -1,5 +1,5 @@
 /****************************************************** 
- * LICENCE : CLAUDE SONNET 4.5 OUTPUT
+ * LICENSE : CLAUDE SONNET 4.5 OUTPUT
 *******************************************************/
 import React, { useEffect, useRef, useState } from "react";
 import {

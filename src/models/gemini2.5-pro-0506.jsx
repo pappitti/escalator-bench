@@ -1,5 +1,5 @@
 /****************************************************** 
- * LICENCE : GEMINI 2.5 PRO 0506 OUTPUT
+ * LICENSE : GEMINI 2.5 PRO 0506 OUTPUT
 *******************************************************/
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';

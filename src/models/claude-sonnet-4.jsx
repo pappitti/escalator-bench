@@ -1,5 +1,5 @@
 /****************************************************** 
- * LICENCE : CLAUDE SONNET 4 OUTPUT
+ * LICENSE : CLAUDE SONNET 4 OUTPUT
 *******************************************************/
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';

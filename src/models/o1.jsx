@@ -1,5 +1,5 @@
 /****************************************************** 
- * LICENCE : OPENAI OUTPUT
+ * LICENSE : OPENAI OUTPUT
 *******************************************************/
 import React, { useState, useEffect, useRef } from 'react';
 

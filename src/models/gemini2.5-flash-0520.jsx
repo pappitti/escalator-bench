@@ -1,5 +1,5 @@
 /****************************************************** 
- * LICENCE : GEMINI 2.5 Flash 0520 OUTPUT
+ * LICENSE : GEMINI 2.5 Flash 0520 OUTPUT
 *******************************************************/
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';

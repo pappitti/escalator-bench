@@ -26,13 +26,15 @@ import QwQViz from './models/qwq32b'
 import Qwen3CoderViz from './models/qwen3-coder-480B-A35B-Instruct'
 import GPTOss120BViz from './models/gpt-oss-120b'
 import GPT5DefaultViz from './models/openai-gpt5-default'
+import Gemini3ProViz from './models/gemini3-pro-preview'
 
 import './App.css'
 
 function App() {
-  const [assistant, setAssistant] = useState("Gemini 2.5 Pro 06-05")
+  const [assistant, setAssistant] = useState("Gemini 3 Pro Preview")
 
   const modelElements ={
+    "Gemini 3 Pro Preview": Gemini3ProViz,
     "DeepSeek v3.2": DSv32Viz,
     "Claude Sonnet 4.5": ClaudeSonnet45Viz,
     "Claude Opus 4.1": ClaudeOpus41Viz,

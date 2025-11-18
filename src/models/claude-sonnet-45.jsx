@@ -1,5 +1,5 @@
 /****************************************************** 
- * LICENCE : CLAUDE SONNET 4.5 OUTPUT
+ * LICENSE : CLAUDE SONNET 4.5 OUTPUT
 *******************************************************/
 import React, { useState, useEffect, useRef } from 'react';
 import { Play, Pause, RotateCcw } from 'lucide-react';

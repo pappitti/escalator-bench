@@ -1,3 +1,7 @@
+/****************************************************** 
+ * LICENSE : GEMINI 2.5 PRO
+*******************************************************/
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 // --- Simulation Constants ---

@@ -1,5 +1,5 @@
 /****************************************************** 
- * LICENCE : DEEPSEEK R1 QWEN2.5-32B
+ * LICENSE : DEEPSEEK R1 QWEN2.5-32B
 *******************************************************/
 
 import React, { useEffect, useState } from 'react';

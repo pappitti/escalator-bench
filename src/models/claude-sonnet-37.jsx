@@ -1,5 +1,5 @@
 /****************************************************** 
- * LICENCE : CLAUDE OUTPUT
+ * LICENSE : CLAUDE OUTPUT
 *******************************************************/
 import React, { useState, useEffect, useRef } from 'react';
 import { Play, Pause, RefreshCw } from 'lucide-react';

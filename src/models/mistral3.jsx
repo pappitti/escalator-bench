@@ -1,5 +1,5 @@
 /****************************************************** 
- * LICENCE : MISTRAL (LE CHAT)
+ * LICENSE : MISTRAL (LE CHAT)
 *******************************************************/
 
 import React, { useEffect, useState } from 'react';

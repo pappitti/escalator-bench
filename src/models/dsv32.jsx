@@ -1,5 +1,5 @@
 /****************************************************** 
- * LICENCE : DEEPSEEK V3.2 OUTPUT (SERVED VIA OFFICIAL DS API)
+ * LICENSE : DEEPSEEK V3.2 OUTPUT (SERVED VIA OFFICIAL DS API)
 *******************************************************/
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';

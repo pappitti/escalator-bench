@@ -1,5 +1,5 @@
 /****************************************************** 
- * LICENCE : QWEN3 OUTPUT (SERVED VIA HYPERBOLIC)
+ * LICENSE : QWEN3 OUTPUT (SERVED VIA HYPERBOLIC)
 *******************************************************/
 
 import React, { useState, useEffect, useRef } from 'react';

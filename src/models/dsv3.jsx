@@ -1,5 +1,5 @@
 /****************************************************** 
- * LICENCE : DEEPSEEK V3 OUTPUT (FP8 SERVED VIA HYPERBOLIC)
+ * LICENSE : DEEPSEEK V3 OUTPUT (FP8 SERVED VIA HYPERBOLIC)
 *******************************************************/
 
 import React, { useState, useEffect, useRef } from 'react';
